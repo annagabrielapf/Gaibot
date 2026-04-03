@@ -11,3 +11,4 @@ Meu assistente será automático, 24h online, fará agendamentos, marcará na ag
 Terei agente financeiro que salvará todos os meu sgastos, salários... fará grafico
 Meu agente pessoal separá tarefas por topicos, exemplo: mercado, agenda, relógio...
 Ver investimento 2x na semana( terça e sexta) as 10h
+Deu certo?
