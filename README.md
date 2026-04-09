@@ -1,26 +1,22 @@
 # 🤖 Gaibot — powered by G.A.I
 
-Gaibot is a personal AI assistant that transforms everyday chaos into structured, intelligent workflows.
+Gaibot is a personal AI assistant focused on organizing and structuring everyday tasks through simple and intelligent workflows.
 
-## 🚀 What it does
-- Task and agenda management
-- Financial organization and tracking
-- Personal life management (health, routines)
-- Intelligent recommendations
-- Automation through messaging (Telegram)
+## 🚀 Current capabilities
+- Task creation and management via Telegram
+- Task classification and organization
+- Basic workflow structuring
 
-## 🧠 Vision
-To simplify life by turning complexity into intelligent systems.
+## 🚧 In progress
+- Improved task categorization
+- Context-aware suggestions
+- Better organization logic
+
+## 🔮 Vision
+Gaibot aims to evolve into a personal AI system capable of managing tasks, finances and daily life through intelligent automation.
 
 ## ⚙️ Tech Stack
 - Python
 - Telegram Bot API
 - VS Code
-- Render (cloud)
 - GitHub
-
-## 🔮 Roadmap
-- Voice and image recognition
-- Smart classification of inputs
-- Financial dashboard
-- Personalized recommendations
