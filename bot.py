@@ -9,23 +9,39 @@ TOKEN = os.getenv("TOKEN")
 
 
 def categorizar_tarefa(texto):
-    texto = texto.lower()
+    palavras = texto.lower().split()
 
-    if any(p in texto for p in ["comprar", "mercado", "supermercado", "feira", "padaria", "absorvente", "pão"]):
+    if any(p in palavras for p in ["comprar", "mercado", "supermercado", "feira", "padaria", "absorvente", "pão"]):
         return "🛒 mercado"
 
-    elif any(p in texto for p in ["estudar", "curso", "ler", "aprender", "python", "ia"]):
+    elif any(p in palavras for p in ["estudar", "curso", "ler", "aprender", "python", "ia"]):
         return "📚 conhecimento"
 
-    elif any(p in texto for p in ["pagar", "conta", "boleto", "dinheiro", "investimento", "pix"]):
+    elif any(p in palavras for p in ["pagar", "conta", "boleto", "dinheiro", "investimento", "pix"]):
         return "💰 finanças"
 
-    elif any(p in texto for p in ["treino", "academia", "correr", "nadar", "farmácia", "menstruei","treinar", "médico", "remédio"]):
+    elif any(p in palavras for p in ["treino", "consulta", "academia", "correr", "nadar", "farmácia", "menstruei","treinar", "médico", "remédio"]):
         return "💪 saúde"
 
     else:
         return "📌 geral"
+    
+def reindexar_tarefas(linhas):
+    novas_linhas = []
 
+    for i, linha in enumerate(linhas, start=1):
+        partes = linha.strip().split(" | ")
+
+        if len(partes) < 3:
+            continue
+
+        categoria = partes[1]
+        texto = " | ".join(partes[2:])
+
+        nova_linha = f"[ ] {i} | {categoria} | {texto}\n"
+        novas_linhas.append(nova_linha)
+
+    return novas_linhas
 
 async def responder(update: Update, context: ContextTypes.DEFAULT_TYPE):
     mensagem = update.message.text.strip()
@@ -94,9 +110,9 @@ async def responder(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     novas_tarefas.append(tarefa)
                     continue
 
-                status_id = partes[0]   # exemplo: [ ] 18
+                status_id = partes[0]
                 try:
-                    id_tarefa = int(status_id.replace("[ ]", "").replace("[x]", "").strip())
+                    id_tarefa = int("".join(filter(str.isdigit, status_id)))
                 except:
                     novas_tarefas.append(tarefa)
                     continue
@@ -106,6 +122,8 @@ async def responder(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 else:
                     novas_tarefas.append(tarefa)
 
+            novas_tarefas = reindexar_tarefas(novas_tarefas)
+            
             with open("tarefas.txt", "w", encoding="utf-8") as arquivo:
                 arquivo.writelines(novas_tarefas)
 
@@ -120,17 +138,66 @@ async def responder(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await update.message.reply_text(resposta)
 
         except:
-            await update.message.reply_text("Use: /done 12 ou /done 12,18,19")
+            await update.message.reply_text("Use: /done 1 ou /done 1,2,3")
 
+    elif mensagem.startswith("/edit"):
+        try:
+            partes = mensagem.split(" ", 2)
+
+            if len(partes) < 3:
+                await update.message.reply_text("Use: /edit ID novo texto")
+                return
+
+            id_editar = int(partes[1])
+            novo_texto = partes[2]
+
+            tarefas_editadas = reindexar_tarefas(tarefas_editadas)
+            with open("tarefas.txt", "r", encoding="utf-8") as arquivo:
+                tarefas = arquivo.readlines()
+
+            tarefas_editadas = []
+            encontrado = False
+
+            for tarefa in tarefas:
+                partes_tarefa = tarefa.strip().split(" | ")
+
+                if len(partes_tarefa) < 3:
+                    tarefas_editadas.append(tarefa)
+                    continue
+
+                status_id = partes_tarefa[0]
+                categoria = partes_tarefa[1]
+                texto = partes_tarefa[2]
+
+                id_atual = int("".join(filter(str.isdigit, status_id)))
+
+            if id_atual == id_editar:
+                nova_linha = f"[ ] {id_editar} | {categoria} | {novo_texto}\n"
+                tarefas_editadas.append(nova_linha)
+                encontrado = True
+            else:
+                tarefas_editadas.append(tarefa)
+
+            if not encontrado:
+                await update.message.reply_text("❌ Tarefa não encontrada.")
+                return
+
+            with open("tarefas.txt", "w", encoding="utf-8") as arquivo:
+                arquivo.writelines(tarefas_editadas)
+
+            await update.message.reply_text(f"✏️ Tarefa {id_editar} atualizada para: {novo_texto}")
+
+        except:
+            await update.message.reply_text("Use: /edit ID novo texto")
+        
     else:
         try:
             with open("tarefas.txt", "r", encoding="utf-8") as arquivo:
                 linhas = arquivo.readlines()
-                ultimo_id = len(linhas)
+            
         except FileNotFoundError:
-            ultimo_id = 0
-
-        novo_id = ultimo_id + 1
+            linhas = []
+        novo_id = len(linhas) + 1
         categoria = categorizar_tarefa(mensagem)
 
         linha = f"[ ] {novo_id} | {categoria} | {mensagem}\n"
@@ -139,7 +206,6 @@ async def responder(update: Update, context: ContextTypes.DEFAULT_TYPE):
             arquivo.write(linha)
 
         await update.message.reply_text(f"📝 Tarefa salva em {categoria}: {mensagem}")
-
 
 app = ApplicationBuilder().token(TOKEN).build()
 
